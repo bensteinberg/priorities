@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <title>Priorities</title>
+    <script type="text/javascript" src="js/vue.global.prod.js"></script>
+    <link rel="stylesheet" href="css/pico.min.css">
+  </head>
+  <body>
+    <main class="container">
+      <div>
+        <h1>Priorities</h1>
+        <p>This is a tool for prioritizing a list of items by choosing one of each pair of options.</p>
+      </div>
+      <div id="app" class="grid">
+        <div id="options">
+          <p>
+            <i>Type or paste options here, one to a line</i>
+          </p>
+          <textarea cols="30" id="" name="" rows="10" v-model="options">
+          </textarea>
+        </div>
+        <div id="selections">
+          <p v-if="selections.length"><i>Choose preferences</i></p>
+          <ul>
+            <li v-for="selection of selections">
+              <button :class="{ secondary: selection.pair[0] !== selection.choice }" @click="choose(selection, 0)">{{ selection.pair[0] }}</button> or <button :class="{ secondary: selection.pair[1] !== selection.choice }" @click="choose(selection, 1)">{{ selection.pair[1] }}</button>
+            </li>
+          </ul>
+        </div>
+        <div id="sortedoptions">
+          <p v-if="allChosen"><i>Ordered list</i></p>
+          <ol v-if="allChosen">
+            <li v-if="allChosen" v-for="option in sortedOptionsList">{{ option }}</li>
+          </ol>
+        </div>
+      </div>
+    </main>
+  </body>
+  <script>
+    var app = Vue.createApp({
+      data() {
+        return {
+          options: "",
+          selections: []
+        }
+      },
+      methods: {
+        choose(selection, idx) {
+          this.selections.filter(x => x.pair === selection.pair)[0].choice = selection.pair[idx];
+        },
+        compareOptions(a, b) {
+          return this.selections.filter(s => s.choice === b).length - this.selections.filter(s => s.choice === a).length;
+        },
+        optionsToList(o) {
+          return [...new Set(o.split("\n").filter(item => item !== ""))]
+        },
+      },
+      watch: {
+        options(oldOptions, newOptions) {
+          if (!newOptions) {
+            this.selections = [];
+          } else {
+            for (let option in this.optionsToList(oldOptions)) {
+              if (this.optionsList.indexOf(option) === -1) {
+                this.selections = this.selections.filter(s => s.pair.indexOf(option) !== -1);
+              }
+            }
+            let selectionPairs = [];
+            for (i = 0 ; i < this.optionsList.length - 1 ; i++) {
+              for (j = i + 1 ; j < this.optionsList.length ; j++) {
+                let pair = [this.optionsList[i], this.optionsList[j]]
+                let oldPairs = this.selections.map(({ pair }) => pair);
+                if (oldPairs.indexOf(pair) === -1) {
+                  this.selections.push({
+                    "pair": pair,
+                    "choice": ""
+                  });
+                }
+              }
+            }
+          }
+        }
+      },
+      computed: {
+        optionsList() {
+          return this.optionsToList(this.options);
+        },
+        sortedOptionsList() {
+          return this.optionsList.toSorted(this.compareOptions);
+        },
+        allChosen() {
+          return this.selections.length && this.selections.every(s => s.choice !== "");
+        },
+      }
+    })
+    app.mount("#app")
+  </script>
+</html>
