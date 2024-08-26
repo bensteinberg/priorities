@@ -22,11 +22,9 @@
         </div>
         <div id="selections">
           <p v-if="selections.length"><i>Choose preferences</i></p>
-          <ul>
-            <li v-for="selection of selections">
-              <button :class="{ secondary: selection.pair[0] !== selection.choice }" @click="choose(selection, 0)">{{ selection.pair[0] }}</button> or <button :class="{ secondary: selection.pair[1] !== selection.choice }" @click="choose(selection, 1)">{{ selection.pair[1] }}</button>
-            </li>
-          </ul>
+          <article v-for="selection of selections">
+            <button :class="{ secondary: selection.pair[0] !== selection.choice }" @click="choose(selection, 0)">{{ selection.pair[0] }}</button> or <button :class="{ secondary: selection.pair[1] !== selection.choice }" @click="choose(selection, 1)">{{ selection.pair[1] }}</button>
+          </article>
         </div>
         <div id="sortedoptions">
           <p v-if="allChosen"><i>Ordered list</i></p>
