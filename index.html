@@ -21,16 +21,16 @@
           </textarea>
         </div>
         <div id="selections">
-          <p v-if="selections.length"><i>Choose preferences</i></p>
-          <article v-for="selection of selections">
-            <button :class="{ secondary: selection.pair[0] !== selection.choice }" @click="choose(selection, 0)">{{ selection.pair[0] }}</button> or <button :class="{ secondary: selection.pair[1] !== selection.choice }" @click="choose(selection, 1)">{{ selection.pair[1] }}</button>
+          <p v-if="selectionsLength"><i>Choose preferences</i></p>
+          <article v-for="pair of buttons">
+            <button :class="{ secondary: pair.button0 !== pair.choice }" @click="choose(pair.selection, 0)">{{ pair.button0 }}</button> or <button :class="{ secondary: pair.button1 !== pair.choice }" @click="choose(pair.selection, 1)">{{ pair.button1 }}</button>
           </article>
         </div>
         <div id="sortedoptions">
-          <p v-if="allChosen"><i>Ordered list</i></p>
-          <ol v-if="allChosen">
-            <li v-if="allChosen" v-for="option in sortedOptionsList">{{ option }}</li>
-          </ol>
+          <p v-if="allChosen"><i>Scored options</i></p>
+            <template v-if="allChosen" v-for="score of sortedOptions" :key="score">
+              <p v-if="allChosen"><i>{{ score[0] }}</i>: <span v-if="allChosen" v-for="(option, idx) in score[1]"><span v-if="idx != 0">&nbsp;</span><mark>{{ option }}</mark></span></p>
+            </template>
         </div>
       </div>
     </main>
@@ -40,54 +40,80 @@
       data() {
         return {
           options: "",
-          selections: []
+          selections: {}
         }
       },
       methods: {
-        choose(selection, idx) {
-          this.selections.filter(x => x.pair === selection.pair)[0].choice = selection.pair[idx];
+        arrayToPairStrings(ary) {
+          let pairs = [];
+          for (let i = 0 ; i < ary.length - 1 ; i++) {
+            for (let j = i + 1 ; j < ary.length ; j++) {
+              pairs.push(JSON.stringify([ary[i], ary[j]]));
+            }
+          }
+          return pairs;
         },
-        compareOptions(a, b) {
-          return this.selections.filter(s => s.choice === b).length - this.selections.filter(s => s.choice === a).length;
+        choose(selection, idx) {
+          let pair = JSON.parse(selection);
+          this.selections[selection] = pair[idx];
         },
         optionsToList(o) {
           return [...new Set(o.split("\n").filter(item => item !== ""))]
         },
       },
       watch: {
-        options(oldOptions, newOptions) {
+        options(newOptions, oldOptions) {
           if (!newOptions) {
-            this.selections = [];
+            this.selections = {};
           } else {
-            for (let option in this.optionsToList(oldOptions)) {
-              if (this.optionsList.indexOf(option) === -1) {
-                this.selections = this.selections.filter(s => s.pair.indexOf(option) !== -1);
+            let newPairStrings = this.arrayToPairStrings(this.optionsToList(newOptions));
+            let oldPairStrings = this.arrayToPairStrings(this.optionsToList(oldOptions));
+            let newSelections = {};
+            for (let pairString of oldPairStrings) {
+              if (newPairStrings.indexOf(pairString) > -1) {
+                newSelections[pairString] = this.selections[pairString];
               }
             }
-            for (i = 0 ; i < this.optionsList.length - 1 ; i++) {
-              for (j = i + 1 ; j < this.optionsList.length ; j++) {
-                let pair = [this.optionsList[i], this.optionsList[j]]
-                let oldPairs = this.selections.map(({ pair }) => pair);
-                if (oldPairs.indexOf(pair) === -1) {
-                  this.selections.push({
-                    "pair": pair,
-                    "choice": ""
-                  });
-                }
+            for (let pairString of newPairStrings) {
+              if (oldPairStrings.indexOf(pairString) === -1) {
+                newSelections[pairString] = "";
               }
             }
+            this.selections = newSelections;
           }
         }
       },
       computed: {
-        optionsList() {
-          return this.optionsToList(this.options);
-        },
-        sortedOptionsList() {
-          return this.optionsList.toSorted(this.compareOptions);
+        sortedOptions() {
+          let options = {};
+          for (let option of this.optionsToList(this.options)) {
+            let score = Object.values(this.selections).filter(s => s === option).length.toString();
+            if (score in options) {
+              options[score].push(option);
+            } else {
+              options[score] = [option];
+            }
+          }
+          return Object.entries(options).toSorted().toReversed();
         },
         allChosen() {
-          return this.selections.length && this.selections.every(s => s.choice !== "");
+          return Object.keys(this.selections).length && Object.values(this.selections).every(s => s !== "");
+        },
+        selectionsLength() {
+          return Object.keys(this.selections).length;
+        },
+        buttons() {
+          let buttons = [];
+          for (let selection of Object.entries(this.selections)) {
+            let choices = JSON.parse(selection[0]);
+            buttons.push({
+              "selection": selection[0],
+              "button0": choices[0],
+              "button1": choices[1],
+              "choice": selection[1]
+            });
+          }
+          return buttons;
         },
       }
     })
