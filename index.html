@@ -10,7 +10,10 @@
     <main class="container">
       <div>
         <h1>Priorities</h1>
-        <p>This is a tool for prioritizing a list of items by choosing one of each pair of options.</p>
+	<details>
+          <summary>This is a tool for prioritizing a list of items by choosing one of each pair of options.</summary>
+	  <p>Sorting a list of three options is easy to do off the top of your head, but it's less obvious how to order ten options. This tool orders them by counting the number of times each option was chosen in all of the pairwise comparisons; the number of pairs is the sum of the positive integers from <math>n - 1</math> down. In the case of ten options, you'd make 45 comparisons.</p>
+	</details>
       </div>
       <div id="app" class="grid">
         <div id="options">
@@ -21,7 +24,7 @@
           </textarea>
         </div>
         <div id="selections">
-          <p v-if="selectionsLength"><i>Choose preferences</i></p>
+          <p v-if="selectionsLength"><i>Choose preferences ({{ numberRemaining }} of {{ selectionsLength }} remaining)</i></p>
           <article v-for="pair of buttons">
             <button :class="{ secondary: pair.button0 !== pair.choice }" @click="choose(pair.selection, 0)">{{ pair.button0 }}</button> or <button :class="{ secondary: pair.button1 !== pair.choice }" @click="choose(pair.selection, 1)">{{ pair.button1 }}</button>
           </article>
@@ -101,6 +104,9 @@
         },
         selectionsLength() {
           return Object.keys(this.selections).length;
+        },
+        numberRemaining() {
+          return Object.values(this.selections).filter(s => s === "").length;
         },
         buttons() {
           let buttons = [];
