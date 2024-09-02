@@ -25,5 +25,5 @@ Alternate version
 An experiment with modern tooling, in part in the interest of reducing
 asset size, is in `vite/`. This uses the currently-recommended setup
 for a Vue app, using Vite, the Composition API, components, and
-TypeScript. It reduces the size of the application by half, from 236K
-to 116K.
+TypeScript. It reduces the size of the application by around half,
+though I don't notice much change in load time.
