@@ -7,7 +7,7 @@ npm install
 and then you can run
 
 ```
-npm lint
+npm run lint
 npm run dev
 ```
 
