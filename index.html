@@ -131,7 +131,7 @@
               options[score] = [option];
             }
           }
-          return Object.entries(options).toSorted().toReversed();
+          return Object.entries(options).toSorted((a, b) => parseInt(a) - parseInt(b)).toReversed();
         },
         allChosen() {
           return Object.keys(this.selections).length && Object.values(this.selections).every(s => s !== "");

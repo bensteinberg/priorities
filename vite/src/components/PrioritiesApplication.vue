@@ -54,7 +54,7 @@ const sortedOptions = computed(() => {
     }
   }
   // return Object.entries(sOptions).toSorted().toReversed()
-  return Object.entries(sOptions).sort().reverse()
+  return Object.entries(sOptions).sort(([a], [b]) => parseInt(a) - parseInt(b)).reverse()
 })
 
 const allChosen = computed(() => {
